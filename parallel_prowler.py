@@ -7,6 +7,7 @@ import mmap
 import numpy as np
 import os
 import pandas as pd
+import psutil
 import queue
 from shlex import quote
 import subprocess
