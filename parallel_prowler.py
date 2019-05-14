@@ -37,6 +37,10 @@ def setup_args(parser):
                         help="Output Directory")
     # parser.add_argument("-o", "--organization",
     #                     help="AWS Profile for Organization Account")
+    parser.add_argument("-t", "--maxthreads", type=int,
+                        help="Max threads: defaults to # of CPUs")
+    parser.add_argument("-F", "--resultsFile", type=str,
+                        help="Results CSV to process to a report XLSX file")
     parser.add_argument("-l", "--log", type=str,
                         choices=['info', 'INFO', 'debug', 'DEBUG'],
                         help="Set LogLevel to INFO (Default) or DEBUG")
@@ -317,9 +321,18 @@ def get_col_widths(dataframe, index):
 
 
 def process_results(resultFileName):
+    global args
     global logging
-    excelName = 'results-'+str(int(scanTime))+'-'+str(scanUUID)+'.xlsx'
-    excelName = outputDir + '/' + excelName
+    if 'verbose' in globals():
+        verbose = True
+    else:
+        verbose = False
+    if args.resultsFile:
+        excelName = args.resultsFile.split('.')[0] + '.xlsx'
+    else:
+        excelName = 'results-'+str(int(scanTime))+'-'+str(scanUUID)+'.xlsx'
+    if 'outputDir' in globals():
+        excelName = outputDir + '/' + excelName
     p_df = pd.read_csv(resultFileName,
                        dtype={'ACCOUNT_NUM': str, 'TITLE_ID': str})
     if verbose:
@@ -391,8 +404,6 @@ def main():
     setup_args(parser)
     global args
     args = parser.parse_args()
-<<<<<<< HEAD
-<<<<<<< HEAD
     if not args.resultsFile:
         process_args(args)
         global resultDict
@@ -416,7 +427,10 @@ def main():
         # process workingProfiles, run assessment tool(s) against each Profile
         for x in workingProfiles:
             q.put(x)
-
+        if args.maxthreads and args.maxthreads > 0:
+            maxthreads = int(args.maxthreads)
+        else:
+            maxthreads = psutil.cpu_count(logical=False)
         threads = [threading.Thread(target=worker) for _i in range(maxthreads)]
         for thread in threads:
             thread.start()
@@ -447,64 +461,11 @@ def main():
         print("Result File: " + resultFileName)
         process_results(resultFileName)
     else:
-        process_results(args.resultsFile)
-=======
-=======
->>>>>>> parent of 0512dcc... added post-processing to convert raw result file into excel file
-    process_args(args)
-    global resultDict
-    resultDict = {}
-    global scanUUID
-    global scanTime
-
-    # Generate a Testing UUID and TimeStamp to add to logs / results
-    scanUUID = uuid.uuid4()
-    scanTime = time.time()
-    logging.info(scanUUID)
-    logging.info(int(scanTime))
-    if verbose:
-        print(scanUUID)
-        print(int(scanTime))
-    global q
-    q = queue.Queue()
-
-    # process workingProfiles, running assessment tool(s) against each Profile
-    for x in workingProfiles:
-        q.put(x)
-
-    threads = [threading.Thread(target=worker) for _i in range(9)]
-    for thread in threads:
-        thread.start()
-        q.put(None)  # one EOF marker for each thread
-
-    for thread in threads:
-        thread.join()
-
-    header = False
-    resultFileName = 'results-'+str(int(scanTime))+'-'+str(scanUUID)+'.csv'
-    resultFileName = outputDir + '/' + resultFileName
-    print("Opening CSV")
-    resultFile = open(resultFileName, 'w+')
-    for key in resultDict:
-        print("resultDict Key: " + key)
-        print("Value:")
-        print(resultDict[key])
-
-        for i in range(len(resultDict[key].split('\n'))):
-            if header:
-                if 'ACCOUNT_NUM' not in resultDict[key].split('\n')[i]:
-                    resultFile.write(resultDict[key].split('\n')[i] + "\n")
-            else:
-                print("Writing Headers")
-                resultFile.write(resultDict[key].split('\n')[0] + "\n")
-                header = True
-    resultFile.close()
-    print("Result File: " + resultFileName)
-    process_results(resultFileName)
-<<<<<<< HEAD
->>>>>>> parent of 0512dcc... added post-processing to convert raw result file into excel file
-=======
->>>>>>> parent of 0512dcc... added post-processing to convert raw result file into excel file
+        if os.path.exists(args.resultsFile):
+            process_results(args.resultsFile)
+        else:
+            print('File unreadable: ' + str(args.resultsFile))
+            log.error('File unreadable: ' + str(args.resultsFile))
 
 
 if __name__ == "__main__":
