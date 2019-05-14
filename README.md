@@ -20,10 +20,11 @@ $ python parallel_prowler.py -h
 
 ## Command line options
 ```
-usage: parallel_prowler.py [-h] [-p PROFILE] [-pp PROWLERPATH] [-pc PROWLERCHECK]
-                     [-pg PROWLERGROUP] [-pE PROWLEREXCLUDE]
-                     [-pn PROWLERNUMERIC] [-R REGION] [-r REGEX]
-                     [-o OUTPUTDIR] [-l {info,INFO,debug,DEBUG}] [-v {0,1}]
+usage: parallel_prowler.py [-h] [-p PROFILE] [-pp PROWLERPATH]
+                           [-pc PROWLERCHECK] [-pg PROWLERGROUP]
+                           [-pE PROWLEREXCLUDE] [-R REGION] [-r REGEX]
+                           [-o OUTPUTDIR] [-t MAXTHREADS] [-F RESULTSFILE]
+                           [-l {info,INFO,debug,DEBUG}] [-v {0,1}]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -39,17 +40,20 @@ optional arguments:
   -pE PROWLEREXCLUDE, --prowlerExclude PROWLEREXCLUDE
                         Execute all tests except a list of specified checks
                         separated by comma (i.e. check21,check31)
-  -pn PROWLERNUMERIC, --prowlerNumeric PROWLERNUMERIC
-                        Numeric Padding of Prowler Checks (1.1 -> 1.01)
   -R REGION, --region REGION
                         AWS Region
   -r REGEX, --regex REGEX
                         REGEX Pattern to Identify AWS Profiles
   -o OUTPUTDIR, --outputDir OUTPUTDIR
                         Output Directory
+  -t MAXTHREADS, --maxthreads MAXTHREADS
+                        Max threads: defaults to # of CPUs
+  -F RESULTSFILE, --resultsFile RESULTSFILE
+                        Results CSV to process to a report XLSX file
   -l {info,INFO,debug,DEBUG}, --log {info,INFO,debug,DEBUG}
                         Set LogLevel to INFO (Default) or DEBUG
   -v {0,1}, --verbosity {0,1}
                         increase output verbosity
+
 ```
 * Note: `-p` and `-r` are mutually exclusive options. `-p` provides a single AWS profile to use, while `-r` provides a pattern to search for in profile names.
