@@ -6,7 +6,7 @@ import sys
 
 """
 Collects IAM Policies
-Evaluates policies looking for badness (*.*)
+Evaluates policies looking for badness (*.*, Effect:Allow + NotAction)
 
 """
 
