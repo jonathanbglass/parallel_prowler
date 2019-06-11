@@ -1,7 +1,14 @@
 import boto3
 import json
 import os
+from progressbar import ProgressBar
 import sys
+
+"""
+Collects IAM Policies
+Evaluates policies looking for badness (*.*)
+
+"""
 
 
 def get_policies(profile):
@@ -9,21 +16,19 @@ def get_policies(profile):
     myiam = session.client('iam')
     marker = None
     allPolicies = []
+    passcount = 1
     while True:
+        pbar = ProgressBar('Collecting Policies')
+        print("Policy Collection, Pass Number: {}".format(passcount))
+        passcount += 1
         if marker:
             response_iterator = myiam.list_policies(OnlyAttached=True,
                                                     Marker=marker)
         else:
             response_iterator = myiam.list_policies(OnlyAttached=True)
-        # print("Next Page: {} ".format(response_iterator['IsTruncated']))
-        for p in response_iterator['Policies']:
-            # pfl = open(os.path.join('policies/', p['PolicyName']+'.json'), 'w')
-            # pfl.write(json.dumps(p, default=str, indent=4))
-            # pfl.close()
+        for p in pbar(response_iterator['Policies']):
             polVers = myiam.get_policy_version(
                 PolicyArn=p['Arn'], VersionId=p['DefaultVersionId'])
-            # print("DEBUG: polVers")
-            # print(polVers)
             mypol = {'Policy': p, 'PolicyVersion': polVers['PolicyVersion']}
             allPolicies.append(mypol)
             pfl = open(os.path.join('policies/', p['PolicyName']+'.json'), 'w')
@@ -34,16 +39,13 @@ def get_policies(profile):
                                     p['PolicyName']+'.json'), 'w')
             pfl.write(json.dumps(ae, default=str, indent=4))
             pfl.close()
-            # print("DEBUG: Attached Entities")
-            # print(ae)
-            # print(json.dumps(polVers['polVers']['Document'], default=str))
         try:
             marker = response_iterator['Marker']
-            # print(marker)
         except KeyError:
             break
-    print("Total Policies: {}\n".format(len(allPolicies)))
-    for p in allPolicies:
+    print("\nTotal Policies: {}".format(len(allPolicies)))
+    pbar = ProgressBar('Checking for Dangerous Policies')
+    for p in pbar(allPolicies):
         # AWSLambdaRole {
         # 'Version': '2012-10-17',
         # 'Statement': [
@@ -96,9 +98,6 @@ def get_policies(profile):
                     p['PolicyVersion']['Document']))
         except Exception as e:
             pass
-    # pfl = open(os.path.join('debug/', 'allpolicies.csv'), 'w')
-    # pfl.write("\n".join(allPolicies))
-    # pfl.close()
     sys.exit(0)
     policies = myiam.list_policies(OnlyAttached=True)
     policies_file = open("policies_file.json", 'w')
