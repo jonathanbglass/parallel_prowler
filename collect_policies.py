@@ -46,6 +46,10 @@ def get_policies(profile):
     print("\nTotal Policies: {}".format(len(allPolicies)))
     pbar = ProgressBar('Checking for Dangerous Policies')
     for p in pbar(allPolicies):
+        # This section looks for bad/dangerous patterns
+
+        # Pattern 1: Allow *.*
+
         # AWSLambdaRole {
         # 'Version': '2012-10-17',
         # 'Statement': [
@@ -64,6 +68,9 @@ def get_policies(profile):
                     p['PolicyVersion']['Document']))
         except Exception as e:
             pass
+
+        # Pattern 2: Allow: *, NotAction
+
         # {'Version': '2012-10-17',
         # 'Statement': [
         #   {
@@ -98,41 +105,6 @@ def get_policies(profile):
                     p['PolicyVersion']['Document']))
         except Exception as e:
             pass
-    sys.exit(0)
-    policies = myiam.list_policies(OnlyAttached=True)
-    policies_file = open("policies_file.json", 'w')
-    policies_file.write(json.dumps(policies, default=str))
-    policies_file.close()
-    thesepols = policies.get('Policies', [])
-    print("Processing " + str(len(thesepols)) + " Policies")
-    print(thesepols)
-    i = 0
-    for z in thesepols:
-        # get policy document
-        i += 1
-        polVers = myiam.get_policy_version(PolicyArn=z['Arn'],
-                                           VersionId=z['DefaultVersionId'])
-        # get attached entities
-        ae = myiam.list_entities_for_policy(PolicyArn=z['Arn'])
-        print(json.dumps(polVers['polVers']['Document'], default=str))
-
-        # insert policy metadata into database
-        # polFile = open(str(i) + ".json", 'w')
-        # json.dump(z, polFile, indent=4)
-        # polFile.close()
-        # cur.execute("EXECUTE policyplan "
-        #             "(%s, %s, %s, %s, %s, %s, %s, %s, "
-        #             "%s, %s, %s, %s, %s, %s, %s)",
-        #             (accountid, json.dumps(z, default=str),
-        #             z['DefaultVersionId'], z['IsAttachable'],
-        #             z['AttachmentCount'], z['UpdateDate'],
-        #             z['Path'], z['CreateDate'],
-        #             z['PolicyName'], z['PolicyId'],
-        #             z['Arn'],
-        #             json.dumps(polVers['polVers']['Document'], default=str),
-        #             json.dumps(ae['PolicyGroups'], default=str),
-        #             json.dumps(ae['PolicyUsers'], default=str),
-        #             json.dumps(ae['PolicyRoles'], default=str)))
     return
 
 
