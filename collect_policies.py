@@ -63,7 +63,14 @@ def get_policies(profile):
         #   }
         # ]
         # }
-        q = p['PolicyVersion']['Document']['Statement'][0]
+
+        try:
+            q = p['PolicyVersion']['Document']['Statement'][0]
+        except Exception as e:
+            print("Problem parsing this policy: {}".format(p))
+            logging.debug("Problem parsing this policy: {}".format(p))
+            print(e)
+            continue
         try:
             if (q['Effect'] == "Allow" and '*' in q['Resource']
                     and '*' in q['Action']):
@@ -174,7 +181,7 @@ def setup_args(parser):
     parser.add_argument("-p", "--profile",
                         help="AWS Profile")
     parser.add_argument("-l", "--log",
-                        help="Log File")
+                        help="Log Level")
 
 
 def main():
@@ -187,7 +194,7 @@ def main():
         loglevel = "DEBUG"
     else:
         loglevel = "INFO"
-    logging.basicConfig(filename='assessment.log',
+    logging.basicConfig(filename='policyAssessment.log',
                         format='%(levelname)s:%(message)s',
                         level=loglevel)
     profile = check_args_creds(args)
