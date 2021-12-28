@@ -7,7 +7,7 @@
 * Generates a summary report across all accounts in an Excel XLSX file
 
 ## Installation
-* Requires Python 3.7
+* Requires Python 3+
 ```$ git clone https://github.com/jonathanbglass/parallel_prowler
 $ python3.7 -m venv parallel_prowler/
 $ source ./parallel_prowler/bin/activate
